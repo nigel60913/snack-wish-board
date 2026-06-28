@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🍬 管理Team零食許願板</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #FFB7C5; --pink-d: #FF85A1;
+  --yellow: #FFE599; --yellow-d: #FFD166;
+  --mint: #B5EAD7; --mint-d: #74C7A5;
+  --blue: #C7E8FF;
+  --lavender: #D4BBFF;
+  --peach: #FFCBA4;
+  --ink: #3D2C2C; --ink2: #7A5C5C;
+  --bg: #FFF8F0;
+  --border: 3px solid #3D2C2C;
+  --shadow: 4px 4px 0 #3D2C2C;
+  --shadow-lg: 6px 6px 0 #3D2C2C;
+  --radius: 20px;
+  --font: 'Nunito', sans-serif;
+}
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 15%, #FFE0EE 0%, transparent 35%),
+    radial-gradient(circle at 85% 85%, #E0F4FF 0%, transparent 35%),
+    radial-gradient(circle at 50% 50%, #F0FFE8 0%, transparent 45%);
+  min-height: 100vh;
+  color: var(--ink);
+}
+
+/* HEADER */
+.header {
+  background: #fff; border-bottom: var(--border);
+  box-shadow: 0 4px 0 var(--ink);
+  padding: 14px 24px; position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { font-size: 30px; animation: wiggle 2.5s ease-in-out infinite; display: inline-block; }
+@keyframes wiggle { 0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)} }
+.logo-text { font-size: 18px; font-weight: 900; line-height: 1.2; }
+.logo-sub { font-size: 11px; font-weight: 600; color: var(--ink2); }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* SYNC STATUS */
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ccc; display: inline-block;
+  transition: background .3s;
+}
+.sync-dot.ok { background: #5cdb95; }
+.sync-dot.err { background: #ff6b6b; }
+.sync-label { font-size: 11px; font-weight: 700; color: var(--ink2); display: flex; align-items: center; gap: 5px; }
+
+/* MONTH NAV */
+.month-nav {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--yellow); border: var(--border);
+  border-radius: 99px; padding: 6px 12px;
+  box-shadow: var(--shadow); font-weight: 800; font-size: 14px;
+}
+.month-nav button {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; font-weight: 900; color: var(--ink);
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s;
+}
+.month-nav button:hover { transform: scale(1.35); }
+.month-label { min-width: 96px; text-align: center; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 99px; border: var(--border);
+  font-family: var(--font); font-size: 13px; font-weight: 800;
+  cursor: pointer; box-shadow: var(--shadow); white-space: nowrap;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .15s;
+}
+.btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: var(--shadow-lg); }
+.btn:active { transform: scale(.96); box-shadow: 2px 2px 0 var(--ink); }
+.btn-pink { background: var(--pink); color: var(--ink); }
+.btn-mint { background: var(--mint); color: var(--ink); }
+.btn-yellow { background: var(--yellow); color: var(--ink); }
+.btn-white { background: #fff; color: var(--ink); }
+
+/* MAIN */
+.main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 80px; }
+
+/* STATS */
+.stats-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+.stat-pill {
+  background: #fff; border: var(--border); border-radius: 99px;
+  padding: 8px 18px; font-size: 13px; font-weight: 700;
+  box-shadow: 3px 3px 0 var(--ink); display: flex; align-items: center; gap: 6px;
+}
+.stat-pill b { font-size: 18px; font-weight: 900; }
+
+/* BOARD TOP */
+.board-top {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 18px;
+}
+.board-title { font-size: 16px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-chip {
+  padding: 5px 14px; border: 2.5px solid var(--ink); border-radius: 99px;
+  font-size: 12px; font-weight: 800; cursor: pointer; background: #fff;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform .12s cubic-bezier(.34,1.56,.64,1), background .1s;
+}
+.filter-chip:hover { transform: scale(1.06); }
+.filter-chip.on { background: var(--ink); color: #fff; }
+
+/* BOARD */
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+  gap: 20px; min-height: 200px;
+}
+
+/* NOTE */
+.note {
+  border: 3px solid var(--ink);
+  border-radius: 4px 18px 4px 18px;
+  padding: 16px 14px 12px; min-height: 165px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; box-shadow: 5px 5px 0 var(--ink);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  word-break: break-word;
+}
+.note::before {
+  content: ''; position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  width: 30px; height: 18px; background: rgba(255,255,255,.75);
+  border: 2.5px solid var(--ink); border-radius: 4px;
+}
+.note:hover { transform: scale(1.06) rotate(0deg) !important; box-shadow: 8px 8px 0 var(--ink); z-index: 10; }
+.note-del {
+  position: absolute; top: 8px; right: 8px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,.7); border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; cursor: pointer; opacity: 0;
+  transition: opacity .12s, transform .12s;
+}
+.note:hover .note-del { opacity: 1; }
+.note-del:hover { transform: scale(1.2); background: var(--pink); }
+.note-emoji { font-size: 24px; display: block; margin-bottom: 4px; margin-top: 4px; }
+.note-snack { font-size: 15px; font-weight: 900; line-height: 1.4; flex: 1; }
+.note-memo {
+  font-size: 12px; font-weight: 600; color: var(--ink2);
+  border-top: 1.5px dashed rgba(61,44,44,.3);
+  padding-top: 6px; margin-top: 6px; line-height: 1.4;
+}
+.vote-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.vote-btn {
+  background: rgba(255,255,255,.6); border: 2px solid var(--ink);
+  border-radius: 99px; padding: 3px 10px;
+  font-size: 12px; font-weight: 800; cursor: pointer;
+  display: flex; align-items: center; gap: 4px; font-family: var(--font);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1);
+}
+.vote-btn:hover { transform: scale(1.12); }
+.vote-btn.voted { background: var(--pink-d); color: #fff; }
+.note-footer {
+  display: flex; align-items: center; justify-content: space-between; margin-top: 6px;
+}
+.note-author { font-size: 11px; font-weight: 800; }
+.note-date { font-size: 10px; color: var(--ink2); font-weight: 600; }
+
+/* LOADING */
+.loading-state { grid-column: 1/-1; text-align: center; padding: 52px 20px; }
+.loading-icon { font-size: 48px; display: block; margin-bottom: 12px; animation: spin 1.2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* EMPTY */
+.empty-state { grid-column: 1/-1; text-align: center; padding: 52px 20px; }
+.empty-icon { font-size: 60px; display: block; margin-bottom: 14px; animation: float 2.5s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)} }
+.empty-state p { font-size: 15px; font-weight: 700; color: var(--ink2); }
+
+/* MODAL */
+.overlay {
+  position: fixed; inset: 0; background: rgba(61,44,44,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: #fff; border: var(--border); border-radius: 24px;
+  padding: 28px 28px 22px; width: 100%; max-width: 420px;
+  box-shadow: 8px 8px 0 var(--ink); position: relative;
+  transform: scale(.88) translateY(20px);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.overlay.show .modal { transform: scale(1) translateY(0); }
+.modal-title { font-size: 20px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--pink); border: 2.5px solid var(--ink); border-radius: 50%;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer; font-weight: 900; box-shadow: 2px 2px 0 var(--ink);
+  transition: transform .15s;
+}
+.modal-close:hover { transform: rotate(90deg) scale(1.1); }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 13px; font-weight: 800; color: var(--ink2); margin-bottom: 6px; }
+.cute-input, .cute-textarea {
+  width: 100%; padding: 9px 16px; border: var(--border); border-radius: 14px;
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  background: var(--bg); color: var(--ink); outline: none;
+  box-shadow: 3px 3px 0 var(--ink); transition: box-shadow .15s, transform .15s;
+}
+.cute-input:focus, .cute-textarea:focus { box-shadow: 5px 5px 0 var(--pink-d); transform: translateY(-1px); }
+.cute-textarea { resize: none; min-height: 68px; line-height: 1.5; }
+.color-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.cdot {
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  border: 3px solid transparent; box-shadow: 2px 2px 0 var(--ink);
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), border-color .1s;
+}
+.cdot:hover { transform: scale(1.15); }
+.cdot.sel { border-color: var(--ink); transform: scale(1.2); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+/* EXPORT */
+.export-modal { max-width: 580px; }
+.export-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.export-table th { background: var(--yellow); border: 2px solid var(--ink); padding: 8px 10px; text-align: left; font-weight: 800; }
+.export-table td { border: 1.5px solid var(--ink); padding: 7px 10px; font-weight: 600; }
+.export-table tr:nth-child(even) td { background: #FFF8F0; }
+.export-scroll { max-height: 340px; overflow-y: auto; border: var(--border); border-radius: 12px; }
+
+/* TOAST */
+.toast-wrap { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.toast {
+  background: var(--ink); color: #fff; font-family: var(--font);
+  font-size: 14px; font-weight: 700; padding: 10px 22px; border-radius: 99px;
+  box-shadow: 0 4px 16px rgba(61,44,44,.25);
+  animation: tIn .3s cubic-bezier(.34,1.56,.64,1) forwards; white-space: nowrap;
+}
+.toast.out { animation: tOut .3s ease forwards; }
+@keyframes tIn { from{opacity:0;transform:translateY(14px) scale(.9)} to{opacity:1;transform:none} }
+@keyframes tOut { to{opacity:0;transform:translateY(10px) scale(.9)} }
+
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 99px; border: 2px solid var(--ink); }
+
+@media(max-width:600px){
+  .header { padding: 12px 14px; }
+  .main { padding: 18px 12px 60px; }
+  .board { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .modal { padding: 22px 16px 18px; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">🍬</span>
+    <div>
+      <div class="logo-text">管理Team零食許願板</div>
+      <div class="logo-sub">Snack Wish Board ✨</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="sync-label"><span class="sync-dot" id="syncDot"></span><span id="syncText">連線中…</span></span>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">◀</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <button class="btn btn-mint" onclick="openExport()">📋 匯出清單</button>
+    <button class="btn btn-pink" onclick="openNote()">✨ 新增許願</button>
+  </div>
+</header>
+
+<main class="main">
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="board-top">
+    <div class="board-title">🌸 許願便利貼牆</div>
+    <div class="filter-row" id="filterRow"></div>
+  </div>
+  <div class="board" id="board">
+    <div class="loading-state"><span class="loading-icon">🍭</span><p style="font-size:14px;font-weight:700;color:#a0857d">資料載入中…</p></div>
+  </div>
+</main>
+
+<!-- 新增許願 Modal -->
+<div class="overlay" id="noteOverlay" onclick="if(event.target===this)closeNote()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeNote()">✕</button>
+    <div class="modal-title">🌟 新增許願便利貼</div>
+    <div class="form-group">
+      <label class="form-label">許願人是誰？ 👤</label>
+      <input class="cute-input" id="fAuthor" type="text" placeholder="輸入你的名字…" maxlength="20" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">想吃的零食 🍬</label>
+      <input class="cute-input" id="fSnack" type="text" placeholder="例如：洋芋片、巧克力熊…" maxlength="40" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">備註 / 許願原因 💬（選填）</label>
+      <textarea class="cute-textarea" id="fMemo" placeholder="為什麼想吃這個呢？" maxlength="80"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">便利貼顏色 🎨</label>
+      <div class="color-row" id="colorRow"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-white" onclick="closeNote()">取消</button>
+      <button class="btn btn-pink" onclick="submitNote()">🌈 貼上去！</button>
+    </div>
+  </div>
+</div>
+
+<!-- 匯出 Modal -->
+<div class="overlay" id="exportOverlay" onclick="if(event.target===this)closeExport()">
+  <div class="modal export-modal">
+    <button class="modal-close" onclick="closeExport()">✕</button>
+    <div class="modal-title">📋 匯出許願清單</div>
+    <div id="exportContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-white" onclick="closeExport()">關閉</button>
+      <button class="btn btn-mint" onclick="copyText()">📋 複製</button>
+      <button class="btn btn-yellow" onclick="downloadCSV()">⬇️ 下載 CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, remove, onValue, runTransaction }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAGDhzsJ-3glW4494hyy5Zp2ecZDKfXGZI",
+  authDomain: "snack-a7a5a.firebaseapp.com",
+  databaseURL: "https://snack-a7a5a-default-rtdb.firebaseio.com",
+  projectId: "snack-a7a5a",
+  storageBucket: "snack-a7a5a.firebasestorage.app",
+  messagingSenderId: "1021471889550",
+  appId: "1:1021471889550:web:ea0c30794c0dda4e5a91df",
+  measurementId: "G-R99HL0V8S8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── 同步狀態 ──────────────────────────────────────────────
+function setSyncStatus(ok) {
+  const dot  = document.getElementById('syncDot');
+  const text = document.getElementById('syncText');
+  dot.className  = 'sync-dot ' + (ok ? 'ok' : 'err');
+  text.textContent = ok ? '即時同步中' : '連線失敗';
+}
+
+// ── 常數 ──────────────────────────────────────────────────
+const COLORS = [
+  { id:'y', bg:'#FFE599', label:'粉黃' },
+  { id:'p', bg:'#FFB7C5', label:'粉紅' },
+  { id:'m', bg:'#B5EAD7', label:'粉綠' },
+  { id:'b', bg:'#C7E8FF', label:'粉藍' },
+  { id:'l', bg:'#D4BBFF', label:'薰衣草' },
+  { id:'o', bg:'#FFCBA4', label:'蜜桃' },
+];
+const SNACK_EMOJI = ['🍬','🍫','🍩','🍪','🧁','🍿','🥨','🍭','🧃','🍡','🎂','🥐','🍦','🧇'];
+const MONTHS_ZH   = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const ME_KEY = (() => {
+  let k = localStorage.getItem('snack_me');
+  if (!k) { k = Math.random().toString(36).slice(2,10); localStorage.setItem('snack_me', k); }
+  return k;
+})();
+
+function snackEmoji(s) {
+  let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+  return SNACK_EMOJI[h % SNACK_EMOJI.length];
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── 狀態 ──────────────────────────────────────────────────
+let curYear  = new Date().getFullYear();
+let curMonth = new Date().getMonth();
+let notes    = {};          // { fbKey: noteObj }
+let filterAuthor = null;
+let unsubscribe  = null;
+
+// ── 月份 key ──────────────────────────────────────────────
+function monthKey(y, m) { return `${y}_${String(m).padStart(2,'0')}`; }
+function curKey()        { return monthKey(curYear, curMonth); }
+
+function changeMonth(d) {
+  let m = curMonth + d, y = curYear;
+  if (m < 0)  { m = 11; y--; }
+  if (m > 11) { m = 0;  y++; }
+  curYear = y; curMonth = m;
+  filterAuthor = null;
+  subscribeMonth();
+}
+
+// ── Firebase 訂閱 ─────────────────────────────────────────
+function subscribeMonth() {
+  document.getElementById('monthLabel').textContent = `${curYear} 年 ${MONTHS_ZH[curMonth]}`;
+  document.getElementById('board').innerHTML =
+    `<div class="loading-state"><span class="loading-icon">🍭</span><p style="font-size:14px;font-weight:700;color:#a0857d">資料載入中…</p></div>`;
+
+  if (unsubscribe) unsubscribe();
+
+  const r = ref(db, `notes/${curKey()}`);
+  unsubscribe = onValue(r, snap => {
+    setSyncStatus(true);
+    notes = snap.val() || {};
+    render();
+  }, () => setSyncStatus(false));
+}
+
+// ── 渲染 ──────────────────────────────────────────────────
+function render() {
+  const allNotes = Object.entries(notes).map(([k, v]) => ({ fbKey: k, ...v }));
+
+  // stats
+  const authors    = [...new Set(allNotes.map(n => n.author))];
+  const totalVotes = allNotes.reduce((s, n) => s + Object.keys(n.votes || {}).length, 0);
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-pill">📝 本月許願 <b>${allNotes.length}</b> 張</div>
+    <div class="stat-pill">👥 許願人數 <b>${authors.length}</b> 位</div>
+    <div class="stat-pill">💖 累計投票 <b>${totalVotes}</b> 票</div>`;
+
+  // filter
+  const fr = document.getElementById('filterRow');
+  if (authors.length > 1) {
+    fr.innerHTML =
+      `<div class="filter-chip ${!filterAuthor?'on':''}" onclick="window._setFilter(null)">全部</div>` +
+      authors.map(a =>
+        `<div class="filter-chip ${filterAuthor===a?'on':''}" onclick="window._setFilter('${esc(a)}')">${esc(a)}</div>`
+      ).join('');
+  } else { fr.innerHTML = ''; }
+
+  // board
+  let visible = filterAuthor ? allNotes.filter(n => n.author === filterAuthor) : allNotes;
+  const board = document.getElementById('board');
+  if (!visible.length) {
+    board.innerHTML = `<div class="empty-state"><span class="empty-icon">🍬</span><p>這個月還沒有許願，快許第一個吧！</p></div>`;
+    return;
+  }
+
+  board.innerHTML = [...visible].reverse().map(n => {
+    const col   = COLORS.find(c => c.id === n.color) || COLORS[0];
+    const votes = n.votes || {};
+    const cnt   = Object.keys(votes).length;
+    const voted = !!votes[ME_KEY];
+    return `<div class="note" style="background:${col.bg};transform:rotate(${n.tilt}deg)">
+      <button class="note-del" onclick="window._delNote('${n.fbKey}')" title="刪除">✕</button>
+      <span class="note-emoji">${snackEmoji(n.snack)}</span>
+      <div class="note-snack">${esc(n.snack)}</div>
+      ${n.memo ? `<div class="note-memo">${esc(n.memo)}</div>` : ''}
+      <div class="vote-row">
+        <button class="vote-btn ${voted?'voted':''}" onclick="window._vote('${n.fbKey}','${voted}')">
+          ${voted?'💖':'🤍'} ${cnt}
+        </button>
+      </div>
+      <div class="note-footer">
+        <span class="note-author">👤 ${esc(n.author)}</span>
+        <span class="note-date">${n.date}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 全域動作（HTML onclick 用）─────────────────────────────
+window._setFilter = a => { filterAuthor = a; render(); };
+
+window._delNote = async fbKey => {
+  if (!confirm('確定刪除這張便利貼嗎？')) return;
+  await remove(ref(db, `notes/${curKey()}/${fbKey}`));
+  toast('便利貼已刪除 🗑️');
+};
+
+window._vote = async (fbKey, wasVoted) => {
+  const vRef = ref(db, `notes/${curKey()}/${fbKey}/votes/${ME_KEY}`);
+  await runTransaction(vRef, cur => wasVoted === 'true' ? null : true);
+};
+
+// ── 新增許願 Modal ────────────────────────────────────────
+let selColor = 'y';
+
+window.openNote = () => {
+  document.getElementById('fAuthor').value = '';
+  document.getElementById('fSnack').value  = '';
+  document.getElementById('fMemo').value   = '';
+  renderColorRow();
+  document.getElementById('noteOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('fAuthor').focus(), 200);
+};
+window.closeNote = () => document.getElementById('noteOverlay').classList.remove('show');
+
+function renderColorRow() {
+  document.getElementById('colorRow').innerHTML = COLORS.map(c =>
+    `<div class="cdot ${selColor===c.id?'sel':''}" style="background:${c.bg}" title="${c.label}"
+      onclick="window._pickColor('${c.id}')"></div>`
+  ).join('');
+}
+window._pickColor = id => { selColor = id; renderColorRow(); };
+
+window.submitNote = async () => {
+  const author = document.getElementById('fAuthor').value.trim();
+  const snack  = document.getElementById('fSnack').value.trim();
+  const memo   = document.getElementById('fMemo').value.trim();
+  if (!author) { toast('請輸入許願人名字！','⚠️'); document.getElementById('fAuthor').focus(); return; }
+  if (!snack)  { toast('請輸入想吃的零食！','⚠️'); document.getElementById('fSnack').focus(); return; }
+  const d    = new Date();
+  const note = {
+    author, snack, memo,
+    color: selColor,
+    tilt:  parseFloat((Math.random()*6-3).toFixed(2)),
+    date:  `${d.getMonth()+1}/${d.getDate()}`,
+    votes: {}
+  };
+  await push(ref(db, `notes/${curKey()}`), note);
+  window.closeNote();
+  toast(`${snackEmoji(snack)} ${author} 許願成功！`);
+};
+
+// ── 匯出 ──────────────────────────────────────────────────
+window.openExport = () => {
+  const allNotes = Object.entries(notes).map(([k,v])=>({fbKey:k,...v}));
+  const el = document.getElementById('exportContent');
+  if (!allNotes.length) {
+    el.innerHTML = '<p style="padding:16px 0;font-weight:700;color:#a0857d">本月還沒有許願喔！</p>';
+  } else {
+    el.innerHTML = `<div class="export-scroll"><table class="export-table">
+      <thead><tr><th>許願人</th><th>零食</th><th>備註</th><th>投票</th><th>日期</th></tr></thead>
+      <tbody>${allNotes.map(n=>`<tr>
+        <td>${esc(n.author)}</td>
+        <td>${snackEmoji(n.snack)} ${esc(n.snack)}</td>
+        <td>${esc(n.memo||'—')}</td>
+        <td>💖 ${Object.keys(n.votes||{}).length}</td>
+        <td>${n.date}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+  document.getElementById('exportOverlay').classList.add('show');
+};
+window.closeExport = () => document.getElementById('exportOverlay').classList.remove('show');
+
+window.copyText = () => {
+  const allNotes = Object.values(notes);
+  if (!allNotes.length) { toast('沒有資料','⚠️'); return; }
+  const text = [`📋 管理Team零食許願清單 — ${curYear}年${MONTHS_ZH[curMonth]}`, '']
+    .concat(allNotes.map((n,i)=>`${i+1}. ${n.author}｜${n.snack}${n.memo?' ('+n.memo+')':''}  💖${Object.keys(n.votes||{}).length}`))
+    .join('\n');
+  navigator.clipboard.writeText(text).then(() => toast('已複製到剪貼簿！','📋'));
+};
+
+window.downloadCSV = () => {
+  const allNotes = Object.values(notes);
+  if (!allNotes.length) { toast('沒有資料','⚠️'); return; }
+  const rows = [['許願人','零食','備註','投票數','日期'],
+    ...allNotes.map(n=>[n.author,n.snack,n.memo||'',Object.keys(n.votes||{}).length,n.date])];
+  const csv = '\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `snack-wishes-${curKey()}.csv`;
+  a.click();
+  toast('CSV 下載中！','⬇️');
+};
+
+// ── Toast ──────────────────────────────────────────────────
+function toast(msg, icon='✅') {
+  const wrap = document.getElementById('toastWrap');
+  const el   = document.createElement('div');
+  el.className = 'toast'; el.textContent = `${icon} ${msg}`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, 2200);
+}
+window.toast = toast;
+
+// ── 鍵盤 ──────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { window.closeNote(); window.closeExport(); }
+});
+
+// ── 啟動 ──────────────────────────────────────────────────
+subscribeMonth();
+</script>
+</body>
+</html>
