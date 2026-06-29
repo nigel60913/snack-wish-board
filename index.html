@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🍬 易圖專管Team零食許願板</title>
+<title>🍬 易圖專管Team零時許願板</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -268,7 +268,7 @@ body {
   <div class="logo">
     <span class="logo-icon">🍬</span>
     <div>
-      <div class="logo-text">易圖專管Team零食許願板</div>
+      <div class="logo-text">易圖專管Team零時許願板</div>
       <div class="logo-sub">Snack Wish Board ✨</div>
     </div>
   </div>
@@ -560,7 +560,7 @@ window.closeExport = () => document.getElementById('exportOverlay').classList.re
 window.copyText = () => {
   const allNotes = Object.values(notes);
   if (!allNotes.length) { toast('沒有資料','⚠️'); return; }
-  const text = [`📋 易圖專管Team零食許願清單 — ${curYear}年${MONTHS_ZH[curMonth]}`, '']
+  const text = [`📋 管理Team零食許願清單 — ${curYear}年${MONTHS_ZH[curMonth]}`, '']
     .concat(allNotes.map((n,i)=>`${i+1}. ${n.author}｜${n.snack}${n.memo?' ('+n.memo+')':''}  💖${Object.keys(n.votes||{}).length}`))
     .join('\n');
   navigator.clipboard.writeText(text).then(() => toast('已複製到剪貼簿！','📋'));
